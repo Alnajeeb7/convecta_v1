@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>CONVECTA — Convective-Scale Nowcasting</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f4f1;--card:#fff;--ink:#1d1d1f;--mute:#6e6e73;--line:#e4e2dd;--land:#ebe9e4;--acc:#c8642b;--ok:#4f8a5b;--warn:#d9992f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#1b1b1a;--card:#262624;--ink:#f2f1ee;--mute:#a3a29d;--line:#3a3936;--land:#33322f}}
+:root[data-theme=dark]{--bg:#1b1b1a;--card:#262624;--ink:#f2f1ee;--mute:#a3a29d;--line:#3a3936;--land:#33322f}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}h1,h2,h3,p{margin:0}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;align-items:center;gap:24px;height:56px;padding:0 24px;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.brand{font-weight:600;letter-spacing:.14em}.brand small{display:block;font-weight:400;letter-spacing:0;color:var(--mute);font-size:10px;margin-top:-4px}
+nav{display:flex;gap:4px;flex:1;overflow-x:auto}nav a{padding:6px 12px;border-radius:99px;color:var(--mute);text-decoration:none;transition:.2s;white-space:nowrap}nav a:hover{color:var(--ink)}nav a.on{background:var(--ink);color:var(--bg)}
+.stat{display:flex;align-items:center;gap:10px;color:var(--mute);font-size:12px;white-space:nowrap}.dot{animation:pl 2s infinite;width:7px;height:7px;border-radius:50%;background:var(--ok);display:inline-block}
+.pill{border:1px solid var(--acc);color:var(--acc);border-radius:99px;padding:1px 10px;font-size:11px;font-weight:500;letter-spacing:.06em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px}
+.wrap{max-width:1180px;margin:0 auto;padding:40px 24px 64px}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+h1{font-size:clamp(34px,5vw,56px);line-height:1.05;letter-spacing:-.03em;font-weight:600;margin:14px 0 18px}
+h2{font-size:26px;letter-spacing:-.02em;font-weight:600}h3{font-size:17px;font-weight:600}.lead{color:var(--mute);font-size:17px;max-width:520px}.sub{color:var(--mute);font-size:12px}
+.hero{display:grid;grid-template-columns:1fr 1.05fr;gap:40px;align-items:center;padding-top:24px}
+.btn{border:0;background:var(--ink);color:var(--bg);padding:10px 20px;border-radius:99px;font-weight:500;transition:.2s}.btn:hover{opacity:.85}.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}.cta{display:flex;gap:10px;margin-top:28px;flex-wrap:wrap}
+.mapc{position:relative;overflow:hidden;background:var(--card)}.mapc svg{display:block;width:100%;height:100%}
+.badge{position:absolute;left:14px;bottom:12px;font-size:11px;color:var(--mute);background:var(--card);border:1px solid var(--line);padding:2px 10px;border-radius:99px;pointer-events:none}
+.facts{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:48px 0 32px}.facts div{padding:16px}.facts small{display:block;color:var(--mute);font-size:11px;letter-spacing:.08em;text-transform:uppercase}.facts b{font-weight:500}
+.story{display:flex;flex-wrap:wrap;gap:8px;align-items:center;color:var(--mute)}.story b{color:var(--ink);font-weight:500;padding:6px 14px;border:1px solid var(--line);border-radius:99px;background:var(--card)}
+.note{color:var(--mute);font-size:12px;margin-top:32px;max-width:720px}
+.gr{stroke:var(--line);stroke-width:.5;stroke-dasharray:2 4}.land{fill:var(--land);stroke:var(--mute);stroke-width:.8;stroke-opacity:.5}.cl{font-size:9px;fill:var(--mute)}.cell{cursor:pointer}
+.ws{display:grid;grid-template-columns:230px 1fr 330px;grid-template-rows:1fr auto;height:calc(100vh - 56px - env(safe-area-inset-top,0px));min-height:560px}
+.ws aside{overflow:auto;padding:20px;background:var(--card);border-color:var(--line);border-style:solid;border-width:0 1px 0 0}.ws aside.r{border-width:0 0 0 1px}
+.ws .mapc{border-radius:0;border:0;cursor:grab;touch-action:none}.ws .tlb{grid-column:1/4;border-top:1px solid var(--line);background:var(--card);padding:12px 24px}
+.zb{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:6px}.zb button{width:32px;height:32px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-size:16px}
+.lay{display:flex;align-items:center;gap:10px;padding:7px 0;color:var(--ink)}.lay input{accent-color:var(--ink)}
+.sec{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin:20px 0 8px}.sec:first-child{margin-top:0}
+.ramp{height:8px;border-radius:4px;background:linear-gradient(90deg,#8fb8d8,#6aa86a,#e0c04a,#e08a3a,#c4453a)}.ramp.h{background:linear-gradient(90deg,#f0d9a8,#e59a4a,#c4453a)}.rl{display:flex;justify-content:space-between;font-size:10px;color:var(--mute);margin-top:3px}
+.tl{display:flex;align-items:center;gap:16px}.play{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--card);flex:none}
+.trk{flex:1;position:relative;padding-bottom:20px}.trk input{width:100%;accent-color:var(--ink);margin:0}.ticks{position:absolute;left:0;right:0;top:22px}.ticks span{position:absolute;transform:translateX(-50%);font-size:11px;color:var(--mute);cursor:pointer}.ticks span:hover{color:var(--ink)}
+.tt{min-width:110px;text-align:right;font-weight:500}.tt small{display:block;color:var(--mute);font-weight:400;font-size:11px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}.chip{border:1px solid var(--line);background:transparent;border-radius:99px;padding:3px 12px;font-size:12px;transition:.2s}.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cd{margin:14px 0;padding:16px;border-radius:14px;background:var(--bg)}.big{font-size:52px;font-weight:600;letter-spacing:-.04em;line-height:1;margin-right:8px}.cd p{color:var(--mute);font-size:12px;margin-top:6px}
+dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0}dt{color:var(--mute)}dd{margin:0;text-align:right}
+.stg{display:flex;gap:3px;margin:8px 0}.stg i{flex:1;height:4px;border-radius:2px;background:var(--line)}.stg i.on{background:var(--ink)}.stgl{font-size:12px;font-weight:500}
+.hb{margin:8px 0}.hb div{display:flex;justify-content:space-between;font-size:12px}.hb u{display:block;height:5px;border-radius:3px;background:var(--line);margin-top:3px;position:relative;overflow:hidden;text-decoration:none}.hb u i{position:absolute;inset:0 auto 0 0;background:var(--acc);transition:width .3s}
+.pg{padding:32px 24px 64px;max-width:1240px;margin:0 auto}.g2{display:grid;grid-template-columns:1fr 340px;gap:20px;margin-top:20px}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:16px}
+.pad{padding:20px}.tabs{display:flex;gap:6px;margin-top:20px;flex-wrap:wrap}.tabs .chip{padding:6px 18px;font-size:13px}
+.ch{padding:14px 16px}.chh{display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}.chh b{color:var(--ink);font-weight:500}.ch svg{width:100%;height:100px;margin-top:6px;cursor:crosshair}.ch small{color:var(--mute);font-size:11px}
+.cur{stroke:var(--ink);stroke-width:1;vector-effect:non-scaling-stroke}.ch path{vector-effect:non-scaling-stroke}
+.src{padding:16px;cursor:pointer;transition:.2s;text-align:left;width:100%;display:block}.src.on{border-color:var(--ink)}.src ul{margin:6px 0 0;padding-left:16px;color:var(--mute);font-size:12px}
+.fz{display:grid;grid-template-columns:1fr 150px 1fr;gap:0;align-items:center;margin-top:20px}.fz .mid{text-align:center;padding:22px 12px}
+.stp{display:grid;grid-template-columns:repeat(9,1fr);gap:6px;margin-top:16px}.stp button{padding:10px 4px;border:1px solid var(--line);background:var(--card);border-radius:12px;font-size:11px;transition:.2s}.stp button.on{background:var(--ink);color:var(--bg)}
+.tbl{width:100%;border-collapse:collapse}.tbl td,.tbl th{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;font-weight:400}.tbl th{color:var(--mute);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.tag{padding:2px 10px;border-radius:99px;font-size:11px;font-weight:500;border:1px solid var(--line)}
+@media(max-width:1000px){.hero,.g2{grid-template-columns:1fr}.facts{grid-template-columns:repeat(2,1fr)}.g3,.g4{grid-template-columns:1fr 1fr}.stp{grid-template-columns:repeat(3,1fr)}
+.ws{display:flex;flex-direction:column;height:auto}.ws .mapc{height:62vh;order:1}.ws aside{border-width:1px 0 0;order:3}.ws .tlb{order:2}.stat span:not(.pill){display:none}header{gap:12px;padding:0 14px}.fz{grid-template-columns:1fr}}
+@media(max-width:560px){.g3,.g4{grid-template-columns:1fr}}
+@keyframes pl{50%{opacity:.3}}</style></head><body>
+<header><div class="brand">CONVECTA<small>Convective-Scale Nowcasting</small></div><nav id="nav"></nav><div class="stat"><span id="live"><i class="dot"></i> Synthetic feed</span><span class="pill">DEMO MODE</span></div></header>
+<main id="app"></main>
+<script>
+const $=s=>document.querySelector(s),pad=n=>String(n).padStart(2,'0');
+const P=([lo,la])=>[(lo-68)*20,(37-la)*20.5];
+const OUT='M'+[[74,37],[77,35.5],[79,34],[78,32],[79,30],[81,30],[84,28.5],[88,27],[89,26.5],[92,27],[96,28],[97,27],[95,25],[94,23],[92.5,22],[91.5,24],[89,22],[87,21.5],[85,19.5],[82,17],[80.2,15],[80,13],[79.8,10.5],[78,8.5],[77.5,8],[76.3,9.5],[75,12.5],[74,15],[73,18],[72.8,20.5],[72.5,21.5],[70,21],[69,22.5],[70.5,23],[68.5,23.5],[70,25],[71,27],[72.5,29],[74.5,31],[74,33]].map(p=>P(p).join(',')).join('L')+'Z';
+const CITIES=[['Delhi',77.2,28.6],['Mumbai',72.9,19.1],['Kolkata',88.4,22.6],['Chennai',80.3,13.1],['Bengaluru',77.6,13]];
+/* Data adapter: replace S / stormAt() with feeds from DWR, INSAT-3D/3DR, lightning networks. Currently SYNTHETIC. */
+const S=[
+{id:7,lon:82.6,lat:20.2,vx:.32,vy:.22,pk:2,w:1.5,amp:.92,tA:.4,hf:.9,df:.6,cf:.7,reg:'Odisha–Chhattisgarh corridor',loc:'Locality A'},
+{id:3,lon:76.8,lat:17.4,vx:.4,vy:.1,pk:1.2,w:1.2,amp:.75,tA:1.1,hf:.5,df:.8,cf:.6,reg:'Telangana plateau',loc:'Locality B'},
+{id:11,lon:86.5,lat:25,vx:-.3,vy:-.15,pk:3.4,w:1.6,amp:.8,tA:2.3,hf:.7,df:.5,cf:.9,reg:'Bihar–Jharkhand plains',loc:'Locality C'},
+{id:5,lon:73.5,lat:26.5,vx:.25,vy:.3,pk:4.2,w:1.4,amp:.6,tA:3.6,hf:.6,df:.9,cf:.4,reg:'Eastern Rajasthan',loc:'Locality D'},
+{id:14,lon:79.5,lat:11.5,vx:-.2,vy:.2,pk:.6,w:1.1,amp:.55,tA:.9,hf:.3,df:.4,cf:.8,reg:'Northern Tamil Nadu',loc:'Locality E'},
+{id:9,lon:91,lat:24.5,vx:.1,vy:-.25,pk:5,w:1.3,amp:.7,tA:4.6,hf:.8,df:.5,cf:.9,reg:'Meghalaya foothills',loc:'Locality F'}];
+const SM=Object.fromEntries(S.map(s=>[s.id,s]));
+/* Real-time engine: 1 real second = 1 simulated minute. Runs entirely in the browser (no backend). */
+S.forEach(s=>s.o={lon:s.lon,lat:s.lat,pk:s.pk,tA:s.tA});
+const T0=Date.now(),SIM=1/60000;const live={src:'In-browser simulator',ts:Date.now()};
+const simStorms=el=>S.map(s=>{const e=el%(s.o.pk+2.2*s.w);return{id:s.id,lon:s.o.lon+s.vx*e,lat:s.o.lat+s.vy*e,pk:s.o.pk-e,tA:s.o.tA-e}});
+const applyStorms=l=>{l.forEach(u=>Object.assign(SM[u.id],u));live.ts=Date.now()};
+const pos=(s,t)=>[s.lon+s.vx*t,s.lat+s.vy*t];
+const I=(s,t)=>s.amp*Math.exp(-((t-s.pk)**2)/(2*s.w*s.w));
+const H=(s,t)=>{const i=I(s,t);return{lightning:Math.min(1,i*1.05),hail:Math.min(1,i*i*1.2*s.hf),downburst:Math.min(1,i*.85*s.df*(Math.abs(t-s.pk)<s.w?1:.5)),cloudburst:Math.min(1,i*.9*s.cf)}};
+const HN={lightning:'Lightning',hail:'Hail',downburst:'Downburst',cloudburst:'Cloudburst'};
+const STG=['Pre-convective','Developing','Initiated','Intensifying','Mature','Weakening'];
+const stIdx=(s,t)=>{const z=(t-s.pk)/s.w;return z<-1.5?0:z<-1?1:z<-.5?2:z<0?3:z<.8?4:5};
+const rnd=x=>{x=Math.sin(x*127.1)*43758.5453;return x-Math.floor(x)};
+const spd=s=>Math.hypot(s.vx*111*Math.cos(s.lat*Math.PI/180),s.vy*111);
+const dir=s=>['N','NE','E','SE','S','SW','W','NW'][Math.round(((Math.atan2(s.vx*Math.cos(s.lat*Math.PI/180),s.vy)*180/Math.PI+360)%360)/45)%8];
+const hcol=p=>p<.35?'#f0d9a8':p<.65?'#e59a4a':'#c4453a';
+const base=new Date(),clk=t=>{const d=new Date(base.getTime()+t*36e5);return pad(d.getHours())+':'+pad(d.getMinutes())};
+const lvl=p=>p<.3?'Low':p<.6?'Moderate':'High';
+const st={view:'overview',t:0,sel:7,hz:'lightning',res:1,play:false,lay:{refl:1,ltg:1,trk:1,unc:1,warn:1},vb:[0,0,600,640],pin:null,src:'radar',stage:0};
+
+function mapSVG(m){
+ const hz=m==='hazard',vb=m==='hero'?[0,0,600,640]:st.vb,t=st.t;let o='';
+ for(let x=70;x<=98;x+=5)o+=`<line x1="${(x-68)*20}" y1="0" x2="${(x-68)*20}" y2="640" class="gr"/>`;
+ for(let y=10;y<=35;y+=5)o+=`<line x1="0" y1="${(37-y)*20.5}" x2="600" y2="${(37-y)*20.5}" class="gr"/>`;
+ o+=`<path d="${OUT}" class="land"/>`;
+ CITIES.forEach(c=>{const[x,y]=P([c[1],c[2]]);o+=`<circle cx="${x}" cy="${y}" r="2" fill="var(--mute)"/><text x="${x+5}" y="${y+3}" class="cl">${c[0]}</text>`});
+ S.forEach(s=>{
+  const i=I(s,t),[x,y]=P(pos(s,t)),r=10+24*i,sel=s.id===st.sel;
+  if(st.lay.trk||hz){let a='',b='';for(let h=-1;h<=t+.001;h+=.25)a+=(a?'L':'M')+P(pos(s,h)).join(',');for(let h=t;h<=6.001;h+=.25)b+=(b?'L':'M')+P(pos(s,h)).join(',');
+   o+=`<path d="${a}" fill="none" stroke="var(--ink)" stroke-width="1" opacity=".55"/><path d="${b}" fill="none" stroke="var(--ink)" stroke-width="1" stroke-dasharray="3 3" opacity=".7"/>`;
+   for(let h=Math.ceil(t);h<=6;h++){const[px,py]=P(pos(s,h));o+=`<circle cx="${px}" cy="${py}" r="1.8" fill="var(--card)" stroke="var(--ink)" stroke-width=".8"/>`}}
+  if(st.lay.unc)for(let h=t+.5;h<=6;h+=.5){const[px,py]=P(pos(s,h));o+=`<circle cx="${px}" cy="${py}" r="${3+3.2*(h-t)}" fill="var(--ink)" opacity=".05"/>`}
+  if(hz){const p=H(s,t)[st.hz];if(p>.05){o+=`<g filter="url(#bl)"><circle cx="${x}" cy="${y}" r="${8+30*p}" fill="${hcol(p)}" opacity=".6"/></g>`;if(p>.45)o+=`<circle cx="${x}" cy="${y}" r="${18+30*p}" fill="none" stroke="#c4453a" stroke-dasharray="4 3" stroke-width="1"/>`}}
+  else if(st.lay.refl&&i>.08){o+=`<g filter="url(#bl)"><circle cx="${x}" cy="${y}" r="${r*1.6}" fill="#8fb8d8" opacity=".2"/><circle cx="${x}" cy="${y}" r="${r}" fill="#8fb8d8" opacity=".55"/><circle cx="${x}" cy="${y}" r="${r*.7}" fill="#6aa86a" opacity=".6"/>${i>.35?`<circle cx="${x}" cy="${y}" r="${r*.45}" fill="#e0c04a" opacity=".7"/>`:''}${i>.55?`<circle cx="${x}" cy="${y}" r="${r*.28}" fill="#e08a3a" opacity=".8"/>`:''}${i>.75?`<circle cx="${x}" cy="${y}" r="${r*.15}" fill="#c4453a"/>`:''}</g>`}
+  if((st.lay.ltg&&!hz)||(hz&&st.hz==='lightning'))for(let k=0,n=Math.round(16*i);k<n;k++){const sd=s.id*31+k+Math.floor(t*4)*7+Math.floor(Date.now()/1500),a=rnd(sd)*6.28,d=rnd(sd+.5)*r*1.4;o+=`<circle cx="${x+Math.cos(a)*d}" cy="${y+Math.sin(a)*d}" r="1.6" fill="#1d1d1f" stroke="#fff" stroke-width=".7"/>`}
+  if(st.lay.warn&&!hz&&i>.5)o+=`<circle cx="${x}" cy="${y}" r="${r+12}" fill="none" stroke="#d9992f" stroke-width="1.2" stroke-dasharray="5 3"/>`;
+  if(m!=='hero')o+=`<g class="cell" data-id="${s.id}"><circle cx="${x}" cy="${y}" r="20" fill="transparent"/>${sel?`<circle cx="${x}" cy="${y}" r="${Math.max(r*.6,7)}" fill="none" stroke="var(--ink)" stroke-width="1.4"/>`:''}<text x="${x+8}" y="${y-8}" class="cl" style="fill:var(--ink);font-weight:500">${pad(s.id)}</text></g>`});
+ if(st.pin&&m!=='hero'){const[x,y]=P(st.pin);o+=`<path d="M${x-5} ${y}h10M${x} ${y-5}v10" stroke="var(--acc)" stroke-width="1.8"/><circle cx="${x}" cy="${y}" r="7" fill="none" stroke="var(--acc)"/>`}
+ return `<svg viewBox="${vb.join(' ')}" preserveAspectRatio="xMidYMid slice"><defs><filter id="bl"><feGaussianBlur stdDeviation="3"/></filter></defs>${o}</svg>`}
+
+const tl=()=>`<div class="tl"><button class="play" data-play aria-label="Play">${st.play?'❚❚':'▶'}</button><div class="trk"><input type="range" min="0" max="6" step=".25" value="${st.t}"><div class="ticks">${[[0,'Now'],[.5,'30 min'],[1,'1 hr'],[2,'2 hr'],[3,'3 hr'],[4,'4 hr'],[5,'5 hr'],[6,'6 hr']].map(([v,l])=>`<span style="left:${v/6*100}%" data-t="${v}">${l}</span>`).join('')}</div></div><div class="tt" id="tt"></div></div>`;
+const chips=()=>`<div class="chips">${S.map(c=>`<button class="chip ${c.id===st.sel?'on':''}" data-sel="${c.id}">${pad(c.id)}</button>`).join('')}</div>`;
+const hbars=(s,t)=>{const h=H(s,t);return Object.keys(h).map(k=>`<div class="hb"><div><span>${HN[k]}</span><span>${Math.round(h[k]*100)}%</span></div><u><i style="width:${h[k]*100}%"></i></u></div>`).join('')};
+function panel(){const s=SM[st.sel],t=st.t,i=I(s,t),[lo,la]=pos(s,t),arr=Math.round((s.tA-t)*60),k=stIdx(s,t);
+ let pin='';if(st.pin){let b=1e9,bt=0;for(let h=0;h<=6;h+=.1){const[a,c]=pos(s,h),d=Math.hypot((a-st.pin[0])*111*Math.cos(c*Math.PI/180),(c-st.pin[1])*111);if(d<b){b=d;bt=h}}pin=`<div class="sec">Pinned location</div><p class="sub">Closest approach of cell ${pad(s.id)}: <b style="color:var(--ink)">${b.toFixed(0)} km</b> at +${Math.floor(bt)}h ${pad(Math.round(bt%1*60))}m (model estimate).</p>`}
+ return `${chips()}<h3>Storm Cell ${pad(s.id)}</h3><p class="sub">${STG[k]} convection · ${s.reg}<br>Synthetic Demonstration Data</p>
+ <div class="cd"><span class="big">${arr>0?arr:'—'}</span><span>${arr>0?'minutes':'arrived / passed'}</span><p>Estimated hazard arrival at ${s.loc} (${clk(s.tA)}). Model-generated; uncertainty ±${Math.round(4+t*6)} min.</p></div>
+ <dl><dt>Position</dt><dd>${la.toFixed(2)}°N ${lo.toFixed(2)}°E</dd><dt>Movement</dt><dd>${dir(s)}</dd><dt>Speed</dt><dd>${spd(s).toFixed(0)} km/h</dd><dt>Reflectivity</dt><dd>${(20+45*i).toFixed(0)} dBZ</dd><dt>CI probability</dt><dd>${Math.round(Math.min(1,i*1.1)*100)}%</dd><dt>Confidence</dt><dd>Model-dependent</dd></dl>
+ <div class="sec">Lifecycle</div><div class="stg">${STG.map((_,j)=>`<i class="${j<=k?'on':''}"></i>`).join('')}</div><div class="stgl">${STG[k]}</div>
+ <div class="sec">Associated hazards · forecast probability</div>${hbars(s,t)}${pin}`}
+
+/* ---- charts ---- */
+function ch(title,unit,fns,lo,hi,cols,band,leg){const W=300,X=t=>t/6*W,Y=v=>95-(v-lo)/(hi-lo)*85;let o='';
+ fns.forEach((f,k)=>{let d='';for(let t=0;t<=6.001;t+=.25)d+=(d?'L':'M')+X(t).toFixed(1)+','+Y(f(t)).toFixed(1);o+=`<path d="${d}" fill="none" stroke="${cols[k]}" stroke-width="1.8"/>`});
+ if(band){let u='',l='';for(let t=0;t<=6.001;t+=.25){const v=fns[0](t),e=band(t);u+=`${X(t)},${Y(v+e)} `;l=`${X(t)},${Y(v-e)} `+l}o=`<polygon points="${u+l}" fill="${cols[0]}" opacity=".16"/>`+o}
+ const v=fns.length===1?fns[0](st.t).toFixed(0)+' '+unit:'';
+ return `<div class="card ch"><div class="chh"><span>${title}</span><b>${v}</b></div><svg class="chart" viewBox="0 0 300 100" preserveAspectRatio="none"><line x1="0" y1="95" x2="300" y2="95" stroke="var(--line)"/>${o}<line x1="${X(st.t)}" y1="0" x2="${X(st.t)}" y2="100" class="cur"/></svg><small>${leg||'0–6 h lead time · Synthetic Demonstration Data'}</small></div>`}
+function analysis(){const s=SM[st.sel],f=g=>t=>g(I(s,t));
+ const traj=(()=>{const pts=[];for(let h=0;h<=6;h+=.25)pts.push(P(pos(s,h)));const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]),x0=Math.min(...xs),y0=Math.min(...ys),sc=Math.min(260/(Math.max(...xs)-x0||1),80/(Math.max(...ys)-y0||1)),q=([a,b])=>[20+(a-x0)*sc,90-(b-y0)*sc],c=q(P(pos(s,st.t)));
+  return `<div class="card ch"><div class="chh"><span>Forecast trajectory</span><b>${dir(s)} · ${spd(s).toFixed(0)} km/h</b></div><svg viewBox="0 0 300 100" style="cursor:default"><polyline points="${pts.map(p=>q(p).join(',')).join(' ')}" fill="none" stroke="var(--ink)" stroke-dasharray="3 3"/><circle cx="${c[0]}" cy="${c[1]}" r="5" fill="var(--acc)"/></svg><small>Projected position with time · Synthetic</small></div>`})();
+ return ch('Radar reflectivity','dBZ',[f(i=>20+45*i)],10,70,['#6aa86a'])+ch('Lightning activity','strikes / 5 min',[f(i=>140*i**1.6)],0,150,['#1d1d1f'])+ch('Cloud-top temperature','°C',[f(i=>-25-55*i)],-85,-20,['#5b8db8'])+
+ ch('Convective probability (uncertainty range)','%',[f(i=>Math.min(100,i*100))],0,110,['#c8642b'],t=>4+3*t,'Shaded: uncertainty range, widens with lead time')+
+ ch('Hazard probability','',['lightning','hail','downburst','cloudburst'].map(k=>t=>H(s,t)[k]*100),0,110,['#1d1d1f','#5b8db8','#d9992f','#c4453a'],null,'Lightning · Hail · Downburst · Cloudburst (dark→red)')+traj}
+
+/* ---- hazards ---- */
+function hzGrid(){const s=SM[st.sel],p=H(s,st.t)[st.hz],sg={lightning:8,hail:4,downburst:5,cloudburst:6}[st.hz],n=24/st.res,c=240/n;let o='';
+ for(let a=0;a<n;a++)for(let b=0;b<n;b++){const d=Math.hypot((a+.5)*st.res-12,(b+.5)*st.res-12),v=p*Math.exp(-d*d/(2*sg*sg))*(.85+.3*rnd(a*57+b*13+st.res));o+=`<rect x="${a*c}" y="${b*c}" width="${c}" height="${c}" fill="${hcol(v)}" opacity="${Math.min(.95,v*1.3+.03)}" stroke="var(--card)" stroke-width=".4"/>`}
+ return `<svg viewBox="0 0 240 240" style="width:100%;border-radius:12px;background:var(--bg)">${o}</svg>`}
+function hzCards(){const s=SM[st.sel],t=st.t;return Object.keys(HN).map(k=>{const p=H(s,t)[k];let a=null,b=null;for(let h=0;h<=6;h+=.25)if(H(s,h)[k]>.4){if(a===null)a=h;b=h}
+ const m={lightning:['Strike density',(p*12).toFixed(1)+' /km²·h'],hail:['Probability',Math.round(p*100)+'%'],downburst:['Risk indicator',lvl(p)],cloudburst:['Threshold indicator',lvl(p)]}[k];
+ return `<div class="card pad"><h3>${HN[k]}</h3><p class="sub">Synthetic Demonstration Data</p><dl style="margin-top:10px"><dt>${m[0]}</dt><dd>${m[1]}</dd><dt>Affected area</dt><dd>≈${Math.round(20+p*240)} km²</dd><dt>Window</dt><dd>${a===null?'None >40%':clk(a)+'–'+clk(b+.25)}</dd></dl></div>`}).join('')}
+
+/* ---- data ---- */
+const SRC={radar:['Doppler Weather Radar',['Reflectivity','Radial velocity','Storm structure','Precipitation movement'],'Contributes storm structure and motion: cell identification, rotation/convergence signatures and tracking vectors.'],
+sat:['Satellite · INSAT-3D / 3DR',['Infrared imagery','Cloud-top characteristics','Cloud evolution','Thermal signatures'],'Contributes early growth: cooling cloud tops flag developing convection before radar echoes appear, and extend coverage beyond radar range.'],
+ltg:['Lightning network',['Strike locations','Strike density','Temporal activity','Electrical signatures'],'Contributes electrification: rapid lightning jumps mark intensification and help confirm active convective cores.']};
+const PIPE=[['Ingest','Collect heterogeneous feeds on their native schedules','DWR volume scans, INSAT imager products, lightning detections','Time-stamped raw products in a common store','Scheduled pollers, Redis streams, PostGIS metadata'],
+['Quality control','Remove artefacts and flag gaps','Raw products','Cleaned, flagged fields','Clutter / anomalous-propagation filters, range and timestamp checks (rule-based)'],
+['Align','Put all sources on one grid and clock','Cleaned fields','1–3 km grid at common time steps','Reprojection, resampling, temporal interpolation (Xarray, Rasterio)'],
+['Fuse','Combine complementary evidence into one state','Aligned radar, satellite, lightning grids','Fused convective state with per-pixel confidence','Source-aware weighted merging'],
+['Extract','Derive convective descriptors','Fused state','Reflectivity structure, cloud-top cooling, lightning density, motion','Image-processing features and thresholds (SciPy)'],
+['Detect','Identify convective initiation and cells','Feature stack','Initiation probability, cell objects','Statistical / ML classifier on spatiotemporal features (PyTorch)'],
+['Track','Follow cells through time','Cell objects','Tracks and motion vectors','Object matching and optical flow (deterministic)'],
+['Forecast','Evolve and extrapolate 0–6 h','Tracks, motion, features','Probabilistic fields per lead time','Advection plus a learned spatiotemporal prediction layer'],
+['Hazard map','Convert forecasts into hazard products','Forecast fields','Lightning, hail, downburst, cloudburst maps at 1–3 km','Hazard-specific indicators, to be calibrated on historical events']];
+function fusion(){const a=st.src,c=k=>a===k?'var(--ink)':'var(--line)';
+ return `<div class="fz"><div style="display:grid;gap:10px">${Object.keys(SRC).map(k=>`<button class="card src ${a===k?'on':''}" data-src="${k}"><b>${SRC[k][0]}</b><ul>${SRC[k][1].map(x=>`<li>${x}</li>`).join('')}</ul></button>`).join('')}</div>
+ <svg viewBox="0 0 150 200" style="width:100%;height:220px"><g fill="none" stroke-width="1.6"><path d="M0 35C60 35 60 100 150 100" stroke="${c('radar')}"/><path d="M0 100H150" stroke="${c('sat')}"/><path d="M0 165C60 165 60 100 150 100" stroke="${c('ltg')}"/></g></svg>
+ <div class="card mid"><small class="sub">Spatiotemporal</small><h3>Fusion Engine</h3><p class="sub" style="margin-top:8px">→ Fused Convective State</p></div></div>
+ <div class="card pad" style="margin-top:16px"><h3>${SRC[a][0]}</h3><p class="sub" style="font-size:14px;margin-top:4px">${SRC[a][2]}</p></div>`}
+function pipe(){const p=PIPE[st.stage];return `<div class="stp">${PIPE.map((x,i)=>`<button class="${i===st.stage?'on':''}" data-stage="${i}">${i+1}<br>${x[0]}</button>`).join('')}</div>
+ <div class="card pad" style="margin-top:16px"><h3>${p[0]}</h3><dl style="margin-top:10px;grid-template-columns:100px 1fr"><dt>Purpose</dt><dd style="text-align:left">${p[1]}</dd><dt>Input</dt><dd style="text-align:left">${p[2]}</dd><dt>Output</dt><dd style="text-align:left">${p[3]}</dd><dt>Method</dt><dd style="text-align:left">${p[4]}</dd></dl></div>`}
+
+/* ---- views ---- */
+const V={
+overview:{h:()=>`<div class="wrap"><section class="hero"><div><p class="eyebrow">Convective-Scale Nowcasting</p><h1>See rapidly developing weather systems before they become localized hazards.</h1><p class="lead">Real-time multi-source data fusion for 0–6 hour convective nowcasting at 1–3 km spatial resolution.</p><div class="cta"><button class="btn" data-go="nowcast">Enter Live Nowcast</button><button class="btn ghost" data-go="data">How it works</button></div></div><div class="card mapc" style="aspect-ratio:600/640" id="map"></div></section>
+ <div class="facts">${[['What','Convective nowcasting'],['Where','Localized · GIS'],['When','0–6 hours'],['Resolution','1–3 km'],['Data','Radar + Satellite + Lightning'],['Output','Hazard intelligence']].map(a=>`<div class="card"><small>${a[0]}</small><b>${a[1]}</b></div>`).join('')}</div>
+ <div class="story"><b>Observe</b>→<b>Fuse</b>→<b>Detect</b>→<b>Track</b>→<b>Forecast</b>→<b>Map</b>→<b>Inform</b></div>
+ <p class="note">Illustrative Demonstration: all storms, lightning and probabilities shown are synthetic. CONVECTA is a prototype for problem statement SIH26084 and is not an official MoES, NCMRWF or IMD product; no live government data is connected.</p></div>`,
+ d:()=>{$('#map').innerHTML=mapSVG('hero')+'<span class="badge">Illustrative Demonstration</span>'}},
+nowcast:{h:()=>`<div class="ws"><aside><div class="sec">Layers</div>${[['refl','Radar reflectivity'],['ltg','Lightning'],['trk','Storm tracks'],['unc','Uncertainty range'],['warn','Warning zones']].map(([k,l])=>`<label class="lay"><input type="checkbox" data-lay="${k}" ${st.lay[k]?'checked':''}>${l}</label>`).join('')}
+ <div class="sec">Reflectivity</div><div class="ramp"></div><div class="rl"><span>Light</span><span>Heavy</span></div>
+ <div class="sec">Sources</div><p class="sub">DWR · INSAT-3D/3DR · Lightning<br>fused into one convective state</p><div class="sec">Grid</div><p class="sub">1–3 km hazard grid: see Hazards</p></aside>
+ <div class="card mapc" id="mapwrap"><div id="map" style="height:100%"></div><div class="zb"><button data-z="0.7">+</button><button data-z="1.4">−</button><button data-z="0" title="Reset">⌂</button></div><span class="badge">Demonstration mode · Synthetic data · Click a cell or the map</span></div>
+ <aside class="r" id="panel"></aside><div class="tlb">${tl()}</div></div>`,
+ d:()=>{$('#map').innerHTML=mapSVG('now');$('#panel').innerHTML=panel()}},
+hazards:{h:()=>`<div class="pg"><h2>Hazard map</h2><p class="sub">Forecast probability per hazard · 1–3 km warning grid</p><div class="tabs">${Object.keys(HN).map(k=>`<button class="chip ${st.hz===k?'on':''}" data-hz="${k}">${HN[k]}</button>`).join('')}</div>
+ <div class="g2"><div><div class="card mapc" id="mapwrap" style="height:520px"><div id="map" style="height:100%"></div><div class="zb"><button data-z="0.7">+</button><button data-z="1.4">−</button><button data-z="0">⌂</button></div><span class="badge">Demonstration mode · Synthetic data</span></div><div class="card pad" style="margin-top:16px">${tl()}</div></div>
+ <div><div class="card pad"><div class="sec">Selected cell</div>${chips()}<div class="sec">Local warning grid · 24 × 24 km</div><div id="grid"></div><div class="tabs" style="margin-top:12px">${[1,2,3].map(r=>`<button class="chip ${st.res===r?'on':''}" data-res="${r}">${r} km</button>`).join('')}</div><div class="sec">Probability</div><div class="ramp h"></div><div class="rl"><span>Low</span><span>High</span></div><p class="sub" style="margin-top:8px">Illustrative grid; cells do not represent operational data.</p></div></div></div>
+ <div class="g4" id="hzc"></div></div>`,
+ d:()=>{$('#map').innerHTML=mapSVG('hazard');$('#grid').innerHTML=hzGrid();$('#hzc').innerHTML=hzCards()}},
+analysis:{h:()=>`<div class="pg"><h2>Analysis</h2><p class="sub">Synchronized meteorological trends · click any chart or drag the timeline</p><div style="margin-top:16px">${chips()}</div><div class="card pad" style="margin-top:12px">${tl()}</div><div class="g3" id="charts"></div></div>`,d:()=>{$('#charts').innerHTML=analysis()}},
+data:{h:()=>`<div class="pg"><h2>Multi-source data fusion</h2><p class="sub">Hover or tap a source to see what it contributes to the fused convective state</p><div id="fus"></div>
+ <h2 style="margin-top:48px">Processing pipeline</h2><p class="sub">Only the detect and forecast stages use machine learning</p><div id="pipe"></div>
+ <div class="g2"><div class="card pad"><h3>Data health</h3><p class="sub">Simulated status for demonstration</p><table class="tbl" style="margin-top:8px"><tr><th>Source</th><th>Status</th><th>Latency</th><th>Coverage</th></tr>
+ <tr><td>Radar (DWR)</td><td><span class="tag" style="color:var(--ok)">Operational</span></td><td>~6 min</td><td>Regional</td></tr><tr><td>Satellite (INSAT)</td><td><span class="tag" style="color:var(--warn)">Delayed</span></td><td>~18 min</td><td>Full disk</td></tr><tr><td>Lightning</td><td><span class="tag" style="color:var(--ok)">Operational</span></td><td>~1 min</td><td>National</td></tr></table></div>
+ <div class="card pad"><h3>Spatiotemporal Prediction Layer</h3><ul style="color:var(--mute);padding-left:18px;margin:8px 0 0"><li>Convective initiation classification</li><li>Storm evolution prediction</li><li>Lightning-density forecasting</li><li>Hail probability estimation</li><li>Downburst risk estimation</li><li>Cloudburst risk estimation</li></ul></div></div></div>`,
+ d:()=>{$('#fus').innerHTML=fusion();$('#pipe').innerHTML=pipe()}},
+alerts:{h:()=>`<div class="pg"><h2>Alert center</h2><p class="sub">Demonstration advisories derived from synthetic cells · not official warnings</p><div id="al" style="display:grid;gap:14px;margin-top:20px"></div></div>`,
+ d:()=>{$('#al').innerHTML=[...S].sort((a,b)=>a.tA-b.tA).map(s=>{const h=H(s,s.pk),k=Object.keys(h).sort((a,b)=>h[b]-h[a])[0],p=h[k],stt=p>.8?['Elevated','#c4453a']:p>.6?['Watch','#d9992f']:['Monitor','var(--mute)'];
+  return `<div class="card pad" style="display:grid;grid-template-columns:1.2fr repeat(4,1fr) auto;gap:16px;align-items:center"><div><small class="sub">CONVECTIVE ALERT · CELL ${pad(s.id)}</small><h3>${s.reg}</h3></div><div><small class="sub">Hazard</small><br>${HN[k]} (${Math.round(p*100)}%)</div><div><small class="sub">Window</small><br>${clk(Math.max(0,s.tA-.25))}–${clk(s.tA+.6)}</div><div><small class="sub">Arrival</small><br>${Math.max(0,Math.round(s.tA*60))} min</div><div><small class="sub">Confidence</small><br>Model-dependent</div><div><span class="tag" style="color:${stt[1]};border-color:${stt[1]}">${stt[0]}</span> <button class="chip" data-open="${s.id}">Open</button></div></div>`}).join('')}}};
+
+/* ---- app ---- */
+const NAV=[['overview','Overview'],['nowcast','Nowcast'],['hazards','Hazards'],['analysis','Analysis'],['data','Data'],['alerts','Alerts']];
+function upd(){V[st.view].d();const tt=$('#tt'),r=$('.tl input'),lv=$('#live');if(lv)lv.innerHTML='<i class="dot"></i> Live · '+live.src+' · '+new Date(live.ts).toLocaleTimeString();if(tt)tt.innerHTML=(st.t?`+${Math.floor(st.t)}h ${pad(Math.round(st.t%1*60))}m`:'NOW')+`<small>${clk(st.t)} · demo</small>`;if(r&&document.activeElement!==r)r.value=st.t;const p=$('.play');if(p)p.textContent=st.play?'❚❚':'▶'}
+function render(){const v=(location.hash||'#overview').slice(1),nv=V[v]?v:'overview';if(nv!==st.view&&(nv==='overview'||st.view==='overview'))st.t=0;st.view=nv;st.vb=[0,0,600,640];$('#app').innerHTML=V[nv].h();$('#nav').innerHTML=NAV.map(n=>`<a href="#${n[0]}" class="${n[0]===nv?'on':''}">${n[1]}</a>`).join('');window.scrollTo(0,0);bindMap();upd()}
+function bindMap(){const w=$('#mapwrap');if(!w)return;let d=null;
+ w.onpointerdown=e=>{if(e.target.closest('.zb'))return;d={x:e.clientX,y:e.clientY,m:0}};
+ w.onpointermove=e=>{if(!d)return;const r=w.getBoundingClientRect(),dx=e.clientX-d.x,dy=e.clientY-d.y;d.m+=Math.abs(dx)+Math.abs(dy);if(d.m>5){const k=st.vb[2]/r.width;st.vb[0]-=dx*k;st.vb[1]-=dy*k;d.x=e.clientX;d.y=e.clientY;$('#map').innerHTML=mapSVG(st.view==='hazards'?'hazard':'now')}};
+ w.onpointerup=e=>{if(!d)return;const moved=d.m>5;d=null;if(moved)return;const c=e.target.closest('.cell');if(c){st.sel=+c.dataset.id}else{const s=w.querySelector('svg'),pt=s.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const q=pt.matrixTransform(s.getScreenCTM().inverse());st.pin=[68+q.x/20,37-q.y/20.5]}upd()};
+ w.onwheel=e=>{e.preventDefault();zoom(e.deltaY>0?1.15:.87)}}
+function zoom(f){if(!f){st.vb=[0,0,600,640];}else{const[x,y,w,h]=st.vb,nw=Math.min(600,Math.max(120,w*f)),nh=nw*640/600;st.vb=[x+(w-nw)/2,y+(h-nh)/2,nw,nh]}$('#map').innerHTML=mapSVG(st.view==='hazards'?'hazard':'now')}
+document.addEventListener('click',e=>{const q=(a)=>e.target.closest(`[${a}]`);let el;
+ if(el=q('data-go'))location.hash=el.dataset.go;
+ else if(el=q('data-sel')){st.sel=+el.dataset.sel;upd()}
+ else if(el=q('data-play')){st.play=!st.play;upd()}
+ else if(el=q('data-t')){st.t=+el.dataset.t;upd()}
+ else if(el=q('data-hz')){st.hz=el.dataset.hz;$('#app').innerHTML=V.hazards.h();bindMap();upd()}
+ else if(el=q('data-res')){st.res=+el.dataset.res;$('#app').innerHTML=V.hazards.h();bindMap();upd()}
+ else if(el=q('data-z'))zoom(+el.dataset.z);
+ else if(el=q('data-src')){st.src=el.dataset.src;upd()}
+ else if(el=q('data-stage')){st.stage=+el.dataset.stage;upd()}
+ else if(el=q('data-open')){st.sel=+el.dataset.open;location.hash='nowcast'}
+ else if(el=e.target.closest('.chart')&&st.view==='analysis'){const r=el.getBoundingClientRect();st.t=Math.round((e.clientX-r.left)/r.width*24)/4;upd()}});
+document.addEventListener('mouseover',e=>{const el=e.target.closest('[data-src]');if(el&&st.view==='data'&&st.src!==el.dataset.src){st.src=el.dataset.src;upd()}});
+document.addEventListener('input',e=>{if(e.target.matches('.tl input')){st.t=+e.target.value;upd()}});
+document.addEventListener('change',e=>{const k=e.target.dataset.lay;if(k){st.lay[k]=e.target.checked?1:0;upd()}});
+setInterval(()=>{if(st.play||st.view==='overview'){st.t+=.05;if(st.t>6.001)st.t=0;upd()}},160);
+setInterval(()=>{applyStorms(simStorms((Date.now()-T0)*SIM));upd()},1000);
+window.addEventListener('hashchange',render);render();
+</script></body></html>
